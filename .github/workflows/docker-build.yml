@@ -80,7 +80,7 @@ jobs:
     needs: [build-amd64, build-arm64]
 
     env:
-      DOCKER_REPOSITORY: 'ghcr.io/linear-finance-test/reward-sender'
+      DOCKER_REPOSITORY: 'ghcr.io/wadedesirco/test-project'
 
     steps:
       - name: 'Login to GitHub Packages'
