@@ -1,0 +1,20 @@
+query ExchangeEntries($block: Int, $first: Int, $skip: Int) {
+  entries: exchangeEntries(
+    block: { number_gte: $block }
+    first: $first
+    skip: $skip
+    orderBy: index
+  ) {
+    id
+    index
+    fromAddr
+    sourceKey
+    sourceAmount
+    destAddr
+    destKey
+    destRecived
+    feeForPool
+    feeForFoundation
+    timestamp
+  }
+}

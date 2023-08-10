@@ -1,0 +1,15 @@
+query RewardClaims($block: Int, $first: Int, $skip: Int) {
+  entries: rewardClaims(
+    block: { number_gte: $block }
+    first: $first
+    skip: $skip
+    orderBy: index
+  ) {
+    id
+    index
+    recipient
+    periodId
+    stakingReward
+    feeReward
+  }
+}

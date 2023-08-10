@@ -1,0 +1,15 @@
+query DebtEntries($block: Int, $first: Int, $skip: Int) {
+  entries: debtEntries(
+    block: { number_gte: $block }
+    first: $first
+    skip: $skip
+    orderBy: index
+  ) {
+    id
+    index
+    address
+    debtFactor
+    debtProportion
+    timestamp
+  }
+}

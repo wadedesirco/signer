@@ -1,0 +1,14 @@
+query PerpFeeEntries($block: Int, $first: Int, $skip: Int) {
+  entries: perpFeeEntries(
+    block: { number_gte: $block }
+    first: $first
+    skip: $skip
+    orderBy: index
+  ) {
+    id
+    index
+    feeForPool
+    feeForFoundation
+    timestamp
+  }
+}
