@@ -381,7 +381,7 @@ async fn run_once(run_context: &RunContext) -> Result<()> {
     let recipient_hex = "0x742d35Cc6634C0532925a3b844Bc454e4438f44e";
     let recipient = Address::from_slice(&hex::decode(&recipient_hex[2..]).unwrap());
     reward_entries.push(RewardEntry {
-        chain_id: 56,
+        chain_id: run_context.chain_id,
         period_id: 136,
         recipient: recipient,
         staking_reward: U256::from_dec_str("100000000000000000").unwrap(),
