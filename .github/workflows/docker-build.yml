@@ -11,7 +11,7 @@ jobs:
     runs-on: 'ubuntu-latest'
 
     env:
-      DOCKER_REPOSITORY: 'ghcr.io/wadedesirco/test-project'
+      DOCKER_REPOSITORY: 'ghcr.io/wadedesirco/signer'
 
     steps:
       - name: 'Checkout'
@@ -46,7 +46,7 @@ jobs:
     runs-on: 'ubuntu-latest'
 
     env:
-      DOCKER_REPOSITORY: 'ghcr.io/wadedesirco/test-project'
+      DOCKER_REPOSITORY: 'ghcr.io/wadedesirco/signer'
 
     steps:
       - name: 'Checkout'
@@ -80,7 +80,7 @@ jobs:
     needs: [build-amd64, build-arm64]
 
     env:
-      DOCKER_REPOSITORY: 'ghcr.io/wadedesirco/test-project'
+      DOCKER_REPOSITORY: 'ghcr.io/wadedesirco/signer'
 
     steps:
       - name: 'Login to GitHub Packages'
