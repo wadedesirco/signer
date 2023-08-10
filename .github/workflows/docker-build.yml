@@ -11,7 +11,7 @@ jobs:
     runs-on: 'ubuntu-latest'
 
     env:
-      DOCKER_REPOSITORY: 'ghcr.io/linear-finance-test/reward-sender'
+      DOCKER_REPOSITORY: 'ghcr.io/wadedesirco/test-project'
 
     steps:
       - name: 'Checkout'
@@ -46,7 +46,7 @@ jobs:
     runs-on: 'ubuntu-latest'
 
     env:
-      DOCKER_REPOSITORY: 'ghcr.io/linear-finance-test/reward-sender'
+      DOCKER_REPOSITORY: 'ghcr.io/wadedesirco/test-project'
 
     steps:
       - name: 'Checkout'
