@@ -292,6 +292,11 @@ async fn main() -> Result<()> {
     let signer = Wallet::from_source(&cli.wallet, chain_id).await?;
     info!("Reward signer: {}", to_checksum(&signer.address(), None));
 
+    info!(
+        "Reward System: {}",
+        to_checksum(&cli.reward_system_address, None)
+    );
+
     let reward_system_contract =
         LnRewardSystem::new(cli.reward_system_address, rpc_provider.clone());
 
