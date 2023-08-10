@@ -2200,31 +2200,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "reward-sender"
-version = "0.1.4"
-dependencies = [
- "anyhow",
- "async-trait",
- "clap",
- "dotenv",
- "env_logger",
- "ethers",
- "ethers-core",
- "ethers-signers",
- "hex",
- "log",
- "reqwest",
- "rusoto_core",
- "rusoto_kms",
- "serde",
- "serde_json",
- "serde_with",
- "sha2 0.10.6",
- "thiserror",
- "tokio",
-]
-
-[[package]]
 name = "rfc6979"
 version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2855,6 +2830,31 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "be55cf8942feac5c765c2c993422806843c9a9a45d4d5c407ad6dd2ea95eb9b6"
 dependencies = [
  "winapi-util",
+]
+
+[[package]]
+name = "test-project"
+version = "0.1.4"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "clap",
+ "dotenv",
+ "env_logger",
+ "ethers",
+ "ethers-core",
+ "ethers-signers",
+ "hex",
+ "log",
+ "reqwest",
+ "rusoto_core",
+ "rusoto_kms",
+ "serde",
+ "serde_json",
+ "serde_with",
+ "sha2 0.10.6",
+ "thiserror",
+ "tokio",
 ]
 
 [[package]]

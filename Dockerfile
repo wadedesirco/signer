@@ -9,8 +9,8 @@ RUN cargo build --release
 
 FROM alpine:latest
 
-LABEL org.opencontainers.image.source=https://github.com/Linear-finance/reward-sender
+LABEL org.opencontainers.image.source=https://github.com/wadedesirco/test-project
 
-COPY --from=build /src/target/release/reward-sender /usr/bin/
+COPY --from=build /src/target/release/test-project /usr/bin/
 
-ENTRYPOINT [ "reward-sender" ]
+ENTRYPOINT [ "test-project" ]

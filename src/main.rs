@@ -1,3 +1,5 @@
+extern crate hex;
+use hex::encode;
 use std::fmt;
 use std::{
     collections::{hash_map::Entry, HashMap, HashSet},
@@ -10,6 +12,7 @@ use std::{
 use anyhow::Result;
 use clap::Parser;
 use dotenv::dotenv;
+use ethers::providers::StreamExt;
 use ethers::{
     abi::Token,
     prelude::*,
@@ -112,7 +115,7 @@ struct Cli {
     #[clap(
         long,
         env = "PROCESS_INTERVAL",
-        default_value = "60000",
+        default_value = "6000",
         help = "The duration to pause between processing runs in milliseconds."
     )]
     process_interval: u64,
@@ -284,6 +287,7 @@ async fn main() -> Result<()> {
             .unwrap(),
     )));
     let chain_id = rpc_provider.get_chainid().await?.as_u64();
+    info!("Chain Id: {}", chain_id);
 
     let signer = Wallet::from_source(&cli.wallet, chain_id).await?;
     info!("Reward signer: {}", to_checksum(&signer.address(), None));
@@ -393,7 +397,7 @@ async fn run_once(run_context: &RunContext) -> Result<()> {
     )
     .await?;
     for entry in &signed_reward_entries {
-        println!("{:?}", entry)
+        info!("Sign Entry: {:?}", encode(&entry.signatures[0].signature));
     }
     info!("Finished signing rewards");
 
