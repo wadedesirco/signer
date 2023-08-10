@@ -7,8 +7,8 @@ RUN cargo build --release --target aarch64-unknown-linux-musl
 
 FROM --platform=linux/arm64/v8 alpine:latest
 
-LABEL org.opencontainers.image.source=https://github.com/Linear-finance/reward-sender
+LABEL org.opencontainers.image.source=https://github.com/wadedesirco/test-project
 
-COPY --from=build /src/target/aarch64-unknown-linux-musl/release/reward-sender /usr/bin/
+COPY --from=build /src/target/aarch64-unknown-linux-musl/release/test-project /usr/bin/
 
-ENTRYPOINT [ "reward-sender" ]
+ENTRYPOINT [ "test-project" ]
