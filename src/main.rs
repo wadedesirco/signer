@@ -300,19 +300,9 @@ async fn main() -> Result<()> {
     let reward_system_contract =
         LnRewardSystem::new(cli.reward_system_address, rpc_provider.clone());
 
-    let first_period_start_time: SystemTime = SystemTime::UNIX_EPOCH
-        + Duration::from_secs(
-            reward_system_contract
-                .first_period_start_time()
-                .await?
-                .as_u64(),
-        );
-    let period_duration: Duration =
-        Duration::from_secs(reward_system_contract.period_length().await?.as_u64());
-    let claim_window_period_count: u32 = reward_system_contract
-        .claim_window_period_count()
-        .await?
-        .as_u32();
+    let first_period_start_time: SystemTime = SystemTime::UNIX_EPOCH + Duration::from_secs(10);
+    let period_duration: Duration = Duration::from_secs(2);
+    let claim_window_period_count: u32 = 2;
 
     debug!("Ensuring worker config is up to date...");
     let worker_client = WorkerClient::new(
@@ -320,26 +310,6 @@ async fn main() -> Result<()> {
         cli.worker_token,
         Duration::from_millis(cli.worker_timeout),
     );
-    {
-        let signers = {
-            let mut buffer = vec![];
-
-            let signer_count = reward_system_contract.get_signer_count().await?.as_u32();
-            for ind in 0..signer_count {
-                buffer.push(reward_system_contract.reward_signers(ind.into()).await?);
-            }
-
-            buffer
-        };
-
-        let latest_worker_config = worker::WorkerConfig {
-            first_period_start_time: first_period_start_time
-                .duration_since(SystemTime::UNIX_EPOCH)?
-                .as_secs(),
-            period_duration: period_duration.as_secs(),
-            signers,
-        };
-    }
 
     debug!("Fetching reward config from worker...");
     let config = worker_client
