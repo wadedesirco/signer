@@ -52,12 +52,7 @@ struct Cli {
         help = "URL of the JSON-RPC interface of the legacy chain (optional)."
     )]
     legacy_chain_json_rpc: Option<Url>,
-    #[clap(
-        long,
-        env = "LEGACY_CHAIN_GRAPH_QUERY",
-        help = "GraphQL query URL of the legacy chain (optional)."
-    )]
-    legacy_chain_graph_query: Option<Url>,
+
     #[clap(
         long,
         env = "REWARD_SYSTEM_ADDRESS",
@@ -71,47 +66,10 @@ struct Cli {
         help = "Contract name for EIP-712 signatures."
     )]
     eip_712_contract_name: String,
-    #[clap(long, env = "WORKER_URL", help = "Base URL of the worker.")]
-    worker_url: Url,
-    #[clap(long, env = "WORKER_TOKEN", help = "Admin token of the worker.")]
-    worker_token: String,
-    #[clap(
-        long,
-        env = "REWARD_CONFIG_SHA256_SUM",
-        value_parser = parse_sha256_sum,
-        help = "SHA-256 checksum of the reward config to be downloade from worker."
-    )]
-    reward_config_sha256_sum: [u8; 32],
+
     #[clap(flatten)]
     wallet: WalletConfig,
-    #[clap(
-        long,
-        env = "GRAPHQL_TIMEOUT",
-        default_value = "5000",
-        help = "GraphQL request timeout in milliseconds."
-    )]
-    graphql_timeout: u64,
-    #[clap(
-        long,
-        env = "WORKER_TIMEOUT",
-        default_value = "5000",
-        help = "Worker request timeout in milliseconds."
-    )]
-    worker_timeout: u64,
-    #[clap(
-        long,
-        env = "CONFIRMATION_BLOCKS",
-        default_value = "15",
-        help = "Number of blocks to wait after a period ends."
-    )]
-    confirmation_blocks: u64,
-    #[clap(
-        long,
-        env = "LEGACY_CHAIN_CONFIRMATION_BLOCKS",
-        default_value = "4",
-        help = "Number of blocks of the legacy chain (optional) to wait after a period ends."
-    )]
-    legacy_chain_confirmation_blocks: u64,
+
     #[clap(
         long,
         env = "PROCESS_INTERVAL",
@@ -119,54 +77,13 @@ struct Cli {
         help = "The duration to pause between processing runs in milliseconds."
     )]
     process_interval: u64,
-    #[clap(
-        long,
-        env = "TRACE_ROOT",
-        help = "Path to the folder containing trace output."
-    )]
-    trace_root: Option<PathBuf>,
-    #[clap(long, env = "LEADER", help = "Whether to act as leader.")]
-    leader: bool,
 }
 
 struct RunContext {
-    config: RewardConfig,
     chain_id: u64,
-    worker_client: WorkerClient,
     signer: Wallet,
-    json_rpc: Url,
-    graph_query: Url,
-    confirmation_blocks: u64,
-    legacy_chain_json_rpc: Option<Url>,
-    legacy_chain_graph_query: Option<Url>,
-    legacy_chain_confirmation_blocks: u64,
-    graphql_timeout: Duration,
-    first_period_start_time: SystemTime,
-    period_duration: Duration,
-    claim_window_period_count: u32,
     eip_712_contract_name: String,
     reward_system_address: Address,
-    trace_root: Option<PathBuf>,
-    is_leader: bool,
-}
-
-struct RewardContext {
-    chain_id: u64,
-    collection_time: SystemTime,
-    first_period_start_time: SystemTime,
-    claim_window_period_count: u32,
-    period_duration: Duration,
-    exclude_list: HashSet<Address>,
-    reward_schedule: Vec<ScheduledReward>,
-    debt_entries: Vec<DebtEntry>,
-    exchange_entries: Vec<ExchangeEntry>,
-    perp_fee_entries: Vec<PerpFeeEntry>,
-    reward_claims: Vec<RewardClaim>,
-}
-
-struct GraphqlClientResolution {
-    client: GraphqlClient,
-    pinned_timestamp: SystemTime,
 }
 
 #[derive(PartialEq, Eq, Serialize, Deserialize)]
@@ -205,11 +122,6 @@ struct Signature {
     signer: Address,
     #[serde(with = "hex_bytes")]
     signature: Vec<u8>,
-}
-
-struct AddressWeights {
-    staking_weight: U256,
-    fee_weight: U256,
 }
 
 impl PartialOrd for RewardEntry {
@@ -297,48 +209,11 @@ async fn main() -> Result<()> {
         to_checksum(&cli.reward_system_address, None)
     );
 
-    let reward_system_contract =
-        LnRewardSystem::new(cli.reward_system_address, rpc_provider.clone());
-
-    let first_period_start_time: SystemTime = SystemTime::UNIX_EPOCH + Duration::from_secs(10);
-    let period_duration: Duration = Duration::from_secs(2);
-    let claim_window_period_count: u32 = 2;
-
-    debug!("Ensuring worker config is up to date...");
-    let worker_client = WorkerClient::new(
-        cli.worker_url,
-        cli.worker_token,
-        Duration::from_millis(cli.worker_timeout),
-    );
-
-    debug!("Fetching reward config from worker...");
-    let config = worker_client
-        .get_reward_config_checked(&cli.reward_config_sha256_sum)
-        .await?;
-    debug!(
-        "Reward config downloaded from worker with checksum {}",
-        hex::encode(cli.reward_config_sha256_sum)
-    );
-
     let run_context = RunContext {
-        config,
         chain_id,
-        worker_client,
         signer,
-        json_rpc: cli.json_rpc,
-        graph_query: cli.graph_query,
-        confirmation_blocks: cli.confirmation_blocks,
-        legacy_chain_json_rpc: cli.legacy_chain_json_rpc,
-        legacy_chain_graph_query: cli.legacy_chain_graph_query,
-        legacy_chain_confirmation_blocks: cli.legacy_chain_confirmation_blocks,
-        graphql_timeout: Duration::from_millis(cli.graphql_timeout),
-        first_period_start_time,
-        period_duration,
-        claim_window_period_count,
         eip_712_contract_name: cli.eip_712_contract_name,
         reward_system_address: cli.reward_system_address,
-        trace_root: cli.trace_root,
-        is_leader: cli.leader,
     };
 
     loop {
@@ -353,14 +228,14 @@ async fn main() -> Result<()> {
 async fn run_once(run_context: &RunContext) -> Result<()> {
     debug!("Signing rewards generated...");
     let mut reward_entries = vec![];
-    let recipient_hex = "0x742d35Cc6634C0532925a3b844Bc454e4438f44e";
+    let recipient_hex = "0x5C9d6aFE82C8f1c33aB274C577932F2D40778347";
     let recipient = Address::from_slice(&hex::decode(&recipient_hex[2..]).unwrap());
     reward_entries.push(RewardEntry {
         chain_id: run_context.chain_id,
         period_id: 136,
         recipient: recipient,
-        staking_reward: U256::from_dec_str("100000000000000000").unwrap(),
-        fee_reward: U256::from_dec_str("100000000000000000").unwrap(),
+        staking_reward: U256::from_dec_str("10000000000000000000000").unwrap(),
+        fee_reward: U256::from_dec_str("1000000000000000").unwrap(),
     });
 
     let signed_reward_entries = sign_rewards(
